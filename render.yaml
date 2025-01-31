@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: laravel-app
+    runtime: docker
+    plan: free
+    region: oregon
+    buildCommand: |
+      apt-get update && apt-get install -y unzip
+      composer install --no-dev --optimize-autoloader
+      php artisan migrate --force
+    startCommand: |
+      php-fpm -D && nginx -g "daemon off;"
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_KEY
+        sync: false
+      - key: DB_CONNECTION
+        value: mysql
+      - key: DB_HOST
+        sync: false
+      - key: DB_DATABASE
+        sync: false
+      - key: DB_USERNAME
+        sync: false
+      - key: DB_PASSWORD
+        sync: false

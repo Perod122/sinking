@@ -7,66 +7,69 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-        <a href="{{ route('dashboard') }}" class="btn btn-secondary mb-2">Back to Dashboard</a>
+            <a href="{{ route('dashboard') }}" class="btn btn-secondary mb-2">Back to Dashboard</a>
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
+
                     <div class="d-flex justify-content-between align-items-center">
-                        <h3 class="text-lg font-semibold">Sinking Record Details</h3>
+                        <h3 class="text-lg font-semibold">Sinking Records</h3>
                         <!-- Add Member Button -->
                         <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addMemberModal">
                             Add Member
                         </button>
                     </div>
                     <ul class="mt-4">
-                        <li><strong>Start Date:</strong>{{ \Carbon\Carbon::parse($sinking->dateStart)->format('F j, Y') }}</li>
+                        <li><strong>Start Date:</strong> {{ \Carbon\Carbon::parse($sinking->dateStart)->format('F j, Y') }}</li>
                         <li><strong>End Date:</strong> {{ \Carbon\Carbon::parse($sinking->dateEnd)->format('F j, Y') }}</li>
                         <li><strong>Payment:</strong> {{ ucwords(strtolower($sinking->method)) }}</li>
                         <li><strong>Payment:</strong> {{ $sinking->payment }}</li>
+                        <li><strong>Total Money Accumulated:</strong> P{{ number_format($totalAccumulated, 2) }}</li>
                     </ul>
 
+                    <input type="text" id="searchInput" class="w-50 rounded mb-3 mt-3" placeholder="Search members..." onkeyup="filterTable()">
                     <h4 class="mt-6 mb-3">Members</h4>
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>#</th> 
-                                <th>Count</th>
-                                <th>Member Name</th> <!-- Updated Header -->
-                                <th>Required Payment</th>
-                                <th>Total Contribution</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                        @if ($sinking->members->isEmpty())
-                            <tr>
-                                <td colspan="5" class="text-center">No members yet</td>
-                            </tr>
-                        @else
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Member Name</th>
+                                    <th>Count</th>
+                                    <th>Required Payment</th>
+                                    <th>Total Contribution</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            @if ($sinking->members->isEmpty())
+                                <tr>
+                                    <td colspan="6" class="text-center">No members yet</td>
+                                </tr>
+                            @else
                                 @foreach ($sinking->members as $member)
                                     <tr>
                                         <td>{{ $member->MemID }}</td>
+                                        <td>{{ ucwords(strtolower($member->fName)) }} {{ ucwords(strtolower($member->lName)) }}</td>
                                         <td>{{ $member->count }}</td>
-                                        <td>{{ ucwords(strtolower($member->fName)) }} {{ ucwords(strtolower($member->lName)) }}</td> <!-- Merged Name Column -->
-                                        <td>P{{ number_format($member->count * $sinking->payment, 2) }} {{ ucwords(strtolower($sinking->method)) }}</td> <!-- Required Payment -->
-                                        <td>P{{ number_format($member->contributions_sum_amount ?? 0, 2) }}</td> <!-- Total Contributions -->
+                                        <td>P{{ number_format($member->count * $sinking->payment, 2) }} {{ ucwords(strtolower($sinking->method)) }}</td>
+                                        <td>P{{ number_format($member->contributions_sum_amount ?? 0, 2) }}</td>
                                         <td>
-                                            <!-- View Button (No Form) -->
-                                            <button type="button" class="btn btn-info btn-m" onclick="window.location='{{ route('sinking.viewContributions', [$sinking->SinkID, $member->MemID]) }}'">
+                                            <button type="button" class="btn btn-info btn-sm" onclick="window.location='{{ route('sinking.viewContributions', [$sinking->SinkID, $member->MemID]) }}'">
                                                 <i class="fas fa-eye"></i>
                                             </button>
                                             
-                                            <!-- Remove Member Form -->
                                             <form action="{{ route('sinking.removeMember', ['SinkID' => $sinking->SinkID, 'memberID' => $member->MemID]) }}" method="POST" onsubmit="return confirm('Are you sure you want to remove this member?');" style="display:inline-block;">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="btn btn-danger btn-m"><i class="fas fa-trash-alt"></i></button>
+                                                <button type="submit" class="btn btn-danger btn-sm"><i class="fas fa-trash-alt"></i></button>
                                             </form>
                                         </td>
                                     </tr>
                                 @endforeach
                             @endif
-                        </tbody>
-                    </table>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -114,4 +117,19 @@
             </div>
         </div>
     </div>
+    <script>
+    function filterTable() {
+        let input = document.getElementById("searchInput").value.toLowerCase();
+        let table = document.querySelector(".table tbody");
+        let rows = table.getElementsByTagName("tr");
+
+        for (let row of rows) {
+            let nameCell = row.getElementsByTagName("td")[2]; // The "Member Name" column
+            if (nameCell) {
+                let name = nameCell.textContent.toLowerCase();
+                row.style.display = name.includes(input) ? "" : "none";
+            }
+        }
+    }
+</script>
 </x-app-layout>

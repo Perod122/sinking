@@ -43,6 +43,19 @@
                     class="text-sm text-gray-600 dark:text-gray-400"
                 >{{ __('Saved.') }}</p>
             @endif
+            @if(session('success'))
+                        <script>
+                            document.addEventListener('DOMContentLoaded', function() {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Success',
+                                    text: '{{ session('success') }}',
+                                    timer: 2000, // The alert will auto-close after 5 seconds
+                                    showConfirmButton: false
+                                });
+                            });
+                        </script>
+                    @endif
         </div>
     </form>
 </section>

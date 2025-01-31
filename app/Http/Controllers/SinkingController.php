@@ -65,11 +65,13 @@ class SinkingController extends Controller
     {
         // Find the sinking record with members and contributions sum
         $sinking = Sinking::with(['members' => function ($query) {
-            $query->withCount('contributions'); // Count number of contributions
             $query->withSum('contributions', 'amount'); // Sum contributions
         }])->findOrFail($id);
-
-        return view('sinking.show', compact('sinking'));
+    
+        // Calculate the total accumulated money from all members
+        $totalAccumulated = $sinking->members->sum('contributions_sum_amount');
+    
+        return view('sinking.show', compact('sinking', 'totalAccumulated'));
     }
     public function addMember(Request $request, $id)
     {
